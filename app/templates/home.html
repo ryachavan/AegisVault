@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}AegisVault — Zero-Trust Enclave{% endblock %}
+
+{% block content %}
+<div class="home-hero">
+    <div class="brand-badge hero-badge">OWASP PROACTIVE CONTROLS REFERENCE ENCLAVE</div>
+    <h1 class="hero-title">AEGIS//VAULT // ZERO-TRUST ENCLAVE</h1>
+    <p class="hero-desc">
+        A defense-in-depth, hardened local vault application built to demonstrate the practical implementation of all 
+        <strong>10 OWASP Proactive Controls</strong>. Designed for high-consequence environments where conventional tools 
+        introduce unacceptable attack surfaces.
+    </p>
+
+    <div class="hero-actions">
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('notes.list_notes') }}" class="btn">[ OPEN ENCRYPTED VAULT ]</a>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn">[ OPERATOR LOGIN ]</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-cyan">[ PROVISION IDENTITY ]</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="hud-header">
+    <div class="hud-title-group">
+        <h2>OWASP TOP 10 PROACTIVE CONTROLS MAPPING</h2>
+        <div class="hud-subtitle">ARCHITECTURE TRACEABILITY, ACTIVE CODE LOCATIONS, AND THREAT ELIMINATION PROOFS</div>
+    </div>
+    <div class="hud-actions">
+        <a href="https://top10.owasp.org/" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-ghost">[ OFFICIAL OWASP TOP 10 &nearr; ]</a>
+    </div>
+</div>
+
+<div class="controls-grid">
+
+    <!-- C1 -->
+    <div class="cyber-card control-card">
+        <div class="control-header">
+            <span class="badge badge-green">C1</span>
+            <h3>Implement Access Control</h3>
+        </div>
+        <div class="control-prop">
+            <span class="prop-label">FUNCTION IN CODE:</span>
+            <code class="prop-code">app/__init__.py::_enforce_login()</code> &bull;
+            <code class="prop-code">app/security/decorators.py::@owner_required</code> &bull;
+            <code class="prop-code">app/security/decorators.py::@role_required</code>
+        </div>
+        <div class="control-desc">
+            Enforces a <strong>deny-by-default</strong> perimeter across all non-auth routes, strict note ownership boundaries, 
+            and parity 404 responses for unauthorized note requests. Also locks the last remaining administrator from demotion.
+        </div>
+        <div class="threat-box">
+            <div class="threat-label">&gt; WHAT HAPPENS IF NOT PRESENT:</div>
+            <div class="threat-text">
+                <strong>Insecure Direct Object References (IDOR) &amp; Broken Access Control:</strong> Any authenticated user could change 
+                the note ID in the URL (e.g. <code>/notes/2</code>) to read, edit, or purge any other user's private notes. 
+                Attackers could also enumerate company note IDs or escalate privileges to administrator without authorization.
+            </div>
+        </div>
+    </div>
+
+    <!-- C2 -->
+    <div class="cyber-card control-card">
+        <div class="control-header">
+            <span class="badge badge-green">C2</span>
+            <h3>Use Cryptography to Protect Data</h3>
+        </div>
+        <div class="control-prop">
+            <span class="prop-label">FUNCTION IN CODE:</span>
+            <code class="prop-code">app/security/passwords.py::hash_password()</code> &bull;
+            <code class="prop-code">app/security/passwords.py::verify_and_rehash()</code> &bull;
+            <code class="prop-code">app/config.py::BaseConfig.SECRET_KEY</code>
+        </div>
+        <div class="control-desc">
+            Encrypts all passwords using <strong>Argon2id</strong> (winner of the Password Hashing Competition) with automatic parameter 
+            re-hashing. Enforces that <code>SECRET_KEY</code> must be provided via environment variables (never hardcoded), refusing to start if missing.
+        </div>
+        <div class="threat-box">
+            <div class="threat-label">&gt; WHAT HAPPENS IF NOT PRESENT:</div>
+            <div class="threat-text">
+                <strong>Catastrophic Credential Exfiltration:</strong> If the database file is accessed or leaked, weak hashing 
+                (like MD5, SHA-1, or unsalted SHA-256) allows attackers to crack millions of passwords per second using GPU rainbow tables. 
+                Hardcoded secret keys allow attackers to forge session cookies and impersonate anyone.
+            </div>
+        </div>
+    </div>
+
+    <!-- C3 -->
+    <div class="cyber-card control-card">
+        <div class="control-header">
+            <span class="badge badge-green">C3</span>
+            <h3>Validate all Input &amp; Handle Exceptions</h3>
+        </div>
+        <div class="control-prop">
+            <span class="prop-label">FUNCTION IN CODE:</span>
+            <code class="prop-code">app/blueprints/auth.py::RegisterForm</code> &bull;
+            <code class="prop-code">app/models.py::SQLAlchemy ORM</code> &bull;
+            <code class="prop-code">app/errors.py::register_error_handlers()</code>
+        </div>
+        <div class="control-desc">
+            Validates all form inputs using WTForms (regex for usernames, length minimums), executes database access purely through 
+            SQLAlchemy ORM parameterized queries (zero string-concatenated SQL), enables autoescaping, and serves generic error pages without stack traces.
+        </div>
+        <div class="threat-box">
+            <div class="threat-label">&gt; WHAT HAPPENS IF NOT PRESENT:</div>
+            <div class="threat-text">
+                <strong>SQL Injection (SQLi) &amp; Diagnostic Leakage:</strong> Attackers submit inputs like <code>' OR 1=1 --</code> 
+                to bypass logins or inject <code>DROP TABLE notes;</code>. Unhandled exceptions display raw Python tracebacks, revealing database 
+                schema, internal filesystem paths, and library versions to attackers.
+            </div>
+        </div>
+    </div>
+
+    <!-- C4 -->
+    <div class="cyber-card control-card">
+        <div class="control-header">
+            <span class="badge badge-green">C4</span>
+            <h3>Address Security from the Start</h3>
+        </div>
+        <div class="control-prop">
+            <span class="prop-label">FUNCTION IN CODE:</span>
+            <code class="prop-code">docs/threat-model.md (STRIDE)</code> &bull;
+            <code class="prop-code">docs/controls-map.md (Traceability Matrix)</code>
+        </div>
+        <div class="control-desc">
+            Embeds formal security design prior to implementation using a full <strong>STRIDE Threat Model</strong> (Spoofing, Tampering, 
+            Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege) and a line-level controls verification matrix.
+        </div>
+        <div class="threat-box">
+            <div class="threat-label">&gt; WHAT HAPPENS IF NOT PRESENT:</div>
+            <div class="threat-text">
+                <strong>Architectural Flaws &amp; Security Blind Spots:</strong> Security retrofitted at the end of development inevitably 
+                leaves foundational structural gaps (like un-pinnable SSRF endpoints or missing CSRF tokens on state-changing actions), 
+                requiring expensive and error-prone architectural rewrites.
+            </div>
+        </div>
+    </div>
+
+    <!-- C5 -->
+    <div class="cyber-card control-card">
+        <div class="control-header">
+            <span class="badge badge-green">C5</span>
+            <h3>Secure By Default Configurations</h3>
+        </div>
+        <div class="control-prop">
+            <span class="prop-label">FUNCTION IN CODE:</span>
+            <code class="prop-code">app/config.py::BaseConfig.DEBUG = False</code> &bull;
+            <code class="prop-code">app/cli.py::create-admin CLI command</code>
+        </div>
+        <div class="control-desc">
+            Enforces <code>DEBUG = False</code> across all configurations. Prevents default credentials by having <strong>no initial admin</strong>; 
+            administrators must be provisioned interactively through a dedicated CLI command with a mandatory password prompt (min 8 chars).
+        </div>
+        <div class="threat-box">
+            <div class="threat-label">&gt; WHAT HAPPENS IF NOT PRESENT:</div>
+            <div class="threat-text">
+                <strong>Immediate System Compromise via Default Accounts:</strong> Automated internet scanners scan for standard accounts 
+                (<code>admin:admin</code> or <code>admin:password</code>). If debug mode is inadvertently left active in production, 
+                interactive web debuggers (like Werkzeug) allow attackers to execute arbitrary shell commands directly in the server environment.
+            </div>
+        </div>
+    </div>
+
+    <!-- C6 -->
+    <div class="cyber-card control-card">
+        <div class="control-header">
+            <span class="badge badge-green">C6</span>
+            <h3>Keep your Components Secure</h3>
+        </div>
+        <div class="control-prop">
+            <span class="prop-label">FUNCTION IN CODE:</span>
+            <code class="prop-code">requirements.txt</code> &bull;
+            <code class="prop-code">pip-audit dependency scanner</code>
+        </div>
+        <div class="control-desc">
+            Maintains strictly pinned dependency versions in <code>requirements.txt</code> and provides integrated <code>pip-audit</code> 
+            instructions to continuously inspect packages against the PyPA Advisory Database and known CVEs.
+        </div>
+        <div class="threat-box">
+            <div class="threat-label">&gt; WHAT HAPPENS IF NOT PRESENT:</div>
+            <div class="threat-text">
+                <strong>Software Supply Chain Attacks:</strong> Using floating or unpinned dependencies leaves the system vulnerable to 
+                known vulnerabilities in outdated dependencies (e.g., HTTP request smuggling in old urllib3 or remote code execution in outdated 
+                template engines) without the developer ever knowing.
+            </div>
+        </div>
+    </div>
+
+    <!-- C7 -->
+    <div class="cyber-card control-card">
+        <div class="control-header">
+            <span class="badge badge-green">C7</span>
+            <h3>Secure Digital Identities</h3>
+        </div>
+        <div class="control-prop">
+            <span class="prop-label">FUNCTION IN CODE:</span>
+            <code class="prop-code">app/blueprints/auth.py::@limiter.limit()</code> &bull;
+            <code class="prop-code">app/blueprints/auth.py::session.clear()</code> &bull;
+            <code class="prop-code">app/config.py::PERMANENT_SESSION_LIFETIME</code>
+        </div>
+        <div class="control-desc">
+            Applies a rate limit of <strong>5 attempts per minute</strong> on login and registration POST requests, regenerates sessions 
+            on login (<code>session.clear()</code>), enforces a 30-minute idle session timeout, and uses generic error messages to eliminate username enumeration.
+        </div>
+        <div class="threat-box">
+            <div class="threat-label">&gt; WHAT HAPPENS IF NOT PRESENT:</div>
+            <div class="threat-text">
+                <strong>Credential Stuffing &amp; Session Fixation:</strong> Botnets fire thousands of breached password lists per minute 
+                until an account is breached. Without session regeneration, an attacker who plants a session cookie on a shared terminal 
+                automatically takes over the victim's authenticated session once they log in.
+            </div>
+        </div>
+    </div>
+
+    <!-- C8 -->
+    <div class="cyber-card control-card">
+        <div class="control-header">
+            <span class="badge badge-green">C8</span>
+            <h3>Leverage Browser Security Features</h3>
+        </div>
+        <div class="control-prop">
+            <span class="prop-label">FUNCTION IN CODE:</span>
+            <code class="prop-code">app/__init__.py::Talisman Content-Security-Policy</code> &bull;
+            <code class="prop-code">app/extensions.py::CSRFProtect</code> &bull;
+            <code class="prop-code">app/static/style.css (100% external)</code>
+        </div>
+        <div class="control-desc">
+            Configures a strict CSP (<strong>no unsafe-inline</strong> anywhere), <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>, 
+            <code>HttpOnly</code> and <code>SameSite=Lax</code> cookie flags, HSTS in production, and CSRF token protection on every state-changing POST action.
+        </div>
+        <div class="threat-box">
+            <div class="threat-label">&gt; WHAT HAPPENS IF NOT PRESENT:</div>
+            <div class="threat-text">
+                <strong>Cross-Site Scripting (XSS) &amp; Clickjacking:</strong> If a user stores a malicious payload, without a strict CSP, 
+                inline scripts execute in other users' browsers to steal cookies and forge actions. Without clickjacking protection, the site can 
+                be framed invisibly to trick users into triggering deletions.
+            </div>
+        </div>
+    </div>
+
+    <!-- C9 -->
+    <div class="cyber-card control-card">
+        <div class="control-header">
+            <span class="badge badge-green">C9</span>
+            <h3>Implement Security Logging and Monitoring</h3>
+        </div>
+        <div class="control-prop">
+            <span class="prop-label">FUNCTION IN CODE:</span>
+            <code class="prop-code">app/security/logging_setup.py::setup_logging()</code> &bull;
+            <code class="prop-code">app/security/logging_setup.py::log_security_event()</code> &bull;
+            <code class="prop-code">app/blueprints/admin.py::view_log()</code>
+        </div>
+        <div class="control-desc">
+            Records structured events for <code>LOGIN_SUCCESS</code>, <code>LOGIN_FAILED</code>, <code>ACCESS_DENIED</code>, <code>ROLE_CHANGED</code>, 
+            and <code>SSRF_BLOCKED</code> into a 1 MB rotating file handler (5 backups). Features an admin terminal viewer.
+        </div>
+        <div class="threat-box">
+            <div class="threat-label">&gt; WHAT HAPPENS IF NOT PRESENT:</div>
+            <div class="threat-text">
+                <strong>Undetected Infiltration &amp; Zero Forensic Visibility:</strong> Intrusions, brute-force attempts, and insider privilege 
+                abuse go completely unnoticed. When a data breach occurs, security analysts have zero historical evidence to identify the root cause, 
+                compromised accounts, or timeline.
+            </div>
+        </div>
+    </div>
+
+    <!-- C10 -->
+    <div class="cyber-card control-card">
+        <div class="control-header">
+            <span class="badge badge-green">C10</span>
+            <h3>Stop Server Side Request Forgery (SSRF)</h3>
+        </div>
+        <div class="control-prop">
+            <span class="prop-label">FUNCTION IN CODE:</span>
+            <code class="prop-code">app/security/ssrf.py::safe_fetch_url()</code> &bull;
+            <code class="prop-code">app/security/ssrf.py::_resolve_and_validate()</code> &bull;
+            <code class="prop-code">app/security/ssrf.py::_forced_ip_resolution()</code>
+        </div>
+        <div class="control-desc">
+            Restricts preview fetches to HTTP/HTTPS, resolves DNS and inspects every IP to reject loopback, link-local, and RFC 1918 private subnets. 
+            Pins socket connection to vetted IP (anti-DNS rebinding), forbids redirects, streams at most 1 MB, and parses only title/description metadata.
+        </div>
+        <div class="threat-box">
+            <div class="threat-label">&gt; WHAT HAPPENS IF NOT PRESENT:</div>
+            <div class="threat-text">
+                <strong>Cloud Infrastructure Compromise &amp; Internal Network Pivoting:</strong> An attacker inputs 
+                <code>http://169.254.169.254/latest/meta-data/</code> to steal AWS/GCP/Azure IAM credentials, seizing the entire cloud project. 
+                Attackers can also probe internal microservices, Redis databases (<code>http://127.0.0.1:6379</code>), or trigger remote code execution.
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

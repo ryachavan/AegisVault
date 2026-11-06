@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}500 ANOMALY ENCOUNTERED // AEGISVAULT{% endblock %}
+
+{% block content %}
+<div class="error-vault">
+    <div class="error-code">500</div>
+    <div class="error-title">[ INTERNAL CORE ANOMALY ]</div>
+    <p class="error-desc">
+        An unhandled anomaly occurred during execution. Diagnostic trace suppressed to prevent information leakage.
+    </p>
+    <a href="{{ url_for('notes.list_notes') }}" class="btn btn-cyan">[ RETURN TO SAFE VAULT ]</a>
+</div>
+{% endblock %}

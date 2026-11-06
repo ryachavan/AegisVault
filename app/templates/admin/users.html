@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}SOC OPERATOR DIRECTORY // ADMIN{% endblock %}
+
+{% block content %}
+<div class="hud-header">
+    <div class="hud-title-group">
+        <h1>SOC DIRECTORY // ACCESS CONTROL MATRIX</h1>
+        <div class="hud-subtitle">PRIVILEGED ROLE PROVISIONING · LAST ADMIN PRESERVATION ENFORCED</div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="cyber-table">
+        <thead>
+            <tr>
+                <th>UID</th>
+                <th>OPERATOR HANDLE</th>
+                <th>CLEARANCE ROLE</th>
+                <th>INITIALIZED UTC</th>
+                <th>ACCESS ASSIGNMENT</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+                <tr>
+                    <td><code>#{{ "%03d"|format(u.id) }}</code></td>
+                    <td><strong>{{ u.username }}</strong></td>
+                    <td>
+                        {% if u.role == 'admin' %}
+                            <span class="badge badge-purple">ROOT ADMIN</span>
+                        {% else %}
+                            <span class="badge badge-green">OPERATOR</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <!-- C8: Role change via POST with CSRF -->
+                        <form method="POST" action="{{ url_for('admin.change_role') }}" class="form-actions">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="user_id" value="{{ u.id }}">
+                            <select name="role">
+                                <option value="user" {% if u.role == 'user' %}selected{% endif %}>User</option>
+                                <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Admin</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-cyan">[ UPDATE ]</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

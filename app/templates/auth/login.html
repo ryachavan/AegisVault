@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}AUTHENTICATION GATEWAY // AEGISVAULT{% endblock %}
+
+{% block content %}
+<div class="cyber-card auth-card">
+    <div class="auth-header">
+        <h1>// AUTH GATEWAY</h1>
+        <p>IDENTIFY TO ACCESS ENCRYPTED NOTE VAULT</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}" class="cyber-form">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(class="form-control", autocomplete="username", placeholder="user_handle") }}
+            {% if form.username.errors %}
+                <div class="field-errors">
+                    {% for error in form.username.errors %}
+                        <div>&gt; {{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password(class="form-control", autocomplete="current-password", placeholder="••••••••••••") }}
+            {% if form.password.errors %}
+                <div class="field-errors">
+                    {% for error in form.password.errors %}
+                        <div>&gt; {{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-actions">
+            {{ form.submit(class="btn", value="[ INITIALIZE SESSION ]") }}
+        </div>
+    </form>
+
+    <div class="auth-footer-box">
+        <p>NO CREDENTIALS REGISTERED?</p>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-cyan">[ PROVISION IDENTITY ]</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{{ note.title }} // RECORD #{{ "%04d"|format(note.id) }}{% endblock %}
+
+{% block content %}
+<div class="hud-header">
+    <div class="hud-title-group">
+        <h1>RECORD #{{ "%04d"|format(note.id) }} // INSPECTION</h1>
+        <div class="hud-subtitle">AUTHENTICATED OWNER ACCESS CONFIRMED</div>
+    </div>
+</div>
+
+<div class="cyber-card">
+    <div class="cyber-card-header">
+        <div class="card-title">{{ note.title }}</div>
+        <div class="form-actions">
+            <span class="badge badge-cyan">REC #{{ "%04d"|format(note.id) }}</span>
+            <span class="badge badge-green">OWNER VERIFIED</span>
+        </div>
+    </div>
+
+    <div class="note-meta">
+        <span>COMMITTED: {{ note.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</span>
+        {% if note.updated_at != note.created_at %}
+            <span>· UPDATED: {{ note.updated_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</span>
+        {% endif %}
+    </div>
+
+    <div class="note-body">{{ note.content }}</div>
+
+    {% if note.url %}
+        <div class="link-preview-box">
+            <div class="preview-tag">[ SSRF-VALIDATED LINK MANIFEST ]</div>
+            {% if note.url_title %}
+                <div class="preview-title">{{ note.url_title }}</div>
+            {% endif %}
+            {% if note.url_description %}
+                <div class="preview-desc">{{ note.url_description }}</div>
+            {% endif %}
+            <a href="{{ note.url }}" target="_blank" rel="noopener noreferrer" class="preview-link">
+                &gt; {{ note.url }}
+            </a>
+        </div>
+    {% endif %}
+
+    <div class="card-footer-actions">
+        <a href="{{ url_for('notes.edit_note', note_id=note.id) }}" class="btn btn-sm btn-cyan">[ EDIT RECORD ]</a>
+        
+        <!-- C8: Delete via POST with CSRF -->
+        <form method="POST" action="{{ url_for('notes.delete_note', note_id=note.id) }}">
+            {{ delete_form.hidden_tag() }}
+            {{ delete_form.submit(class="btn btn-danger btn-sm", value="[ PURGE RECORD ]") }}
+        </form>
+    </div>
+</div>
+{% endblock %}

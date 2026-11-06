@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}VAULT DEPOSITORY // AEGISVAULT{% endblock %}
+
+{% block content %}
+<div class="hud-header">
+    <div class="hud-title-group">
+        <h1>VAULT RECORDS // DEPOSITORY</h1>
+        <div class="hud-subtitle">USER-ISOLATED CRYPTOGRAPHIC STORAGE · ACCESS RESTRICTED TO OWNER</div>
+    </div>
+</div>
+
+{% if notes %}
+    {% for note in notes %}
+        <div class="cyber-card">
+            <div class="cyber-card-header">
+                <div class="card-title">
+                    <a href="{{ url_for('notes.view_note', note_id=note.id) }}">{{ note.title }}</a>
+                </div>
+                <div class="form-actions">
+                    <span class="badge badge-cyan">REC #{{ "%04d"|format(note.id) }}</span>
+                    {% if note.url %}
+                        <span class="badge badge-green">LINK ATTACHED</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="note-meta">
+                <span>TIMELOCKED: {{ note.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</span>
+                {% if note.updated_at != note.created_at %}
+                    <span>· MODIFIED: {{ note.updated_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</span>
+                {% endif %}
+            </div>
+
+            {% if note.content %}
+                <div class="note-body">{{ note.content[:240] }}{% if note.content|length > 240 %}...{% endif %}</div>
+            {% endif %}
+
+            {% if note.url %}
+                <div class="link-preview-box">
+                    <div class="preview-tag">[ RESOLVED PREVIEW ]</div>
+                    {% if note.url_title %}
+                        <div class="preview-title">{{ note.url_title }}</div>
+                    {% endif %}
+                    <div class="preview-link">{{ note.url }}</div>
+                </div>
+            {% endif %}
+
+            <div class="card-footer-actions">
+                <a href="{{ url_for('notes.edit_note', note_id=note.id) }}" class="btn btn-sm btn-ghost">[ EDIT RECORD ]</a>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="empty-vault">
+        <div class="empty-vault-icon">◈</div>
+        <h3>VAULT CHAMBER EMPTY</h3>
+        <p>NO ENCRYPTED RECORDS REGISTERED FOR CURRENT OPERATOR IDENTITY.</p>
+        <a href="{{ url_for('notes.create_note') }}" class="btn">[ DEPOSIT NOTE ]</a>
+    </div>
+{% endif %}
+{% endblock %}

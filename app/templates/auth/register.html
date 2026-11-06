@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}PROVISION IDENTITY // AEGISVAULT{% endblock %}
+
+{% block content %}
+<div class="cyber-card auth-card">
+    <div class="auth-header">
+        <h1>// IDENTITY PROVISIONING</h1>
+        <p>CREATE CRYPTOGRAPHIC PROFILE PROTECTED BY ARGON2ID</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.register') }}" class="cyber-form">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(class="form-control", autocomplete="username", placeholder="alphanumeric_handle") }}
+            {% if form.username.errors %}
+                <div class="field-errors">
+                    {% for error in form.username.errors %}
+                        <div>&gt; {{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password(class="form-control", autocomplete="new-password", placeholder="minimum 8 characters") }}
+            {% if form.password.errors %}
+                <div class="field-errors">
+                    {% for error in form.password.errors %}
+                        <div>&gt; {{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.confirm.label }}
+            {{ form.confirm(class="form-control", autocomplete="new-password", placeholder="re-enter password") }}
+            {% if form.confirm.errors %}
+                <div class="field-errors">
+                    {% for error in form.confirm.errors %}
+                        <div>&gt; {{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-actions">
+            {{ form.submit(class="btn", value="[ REGISTER IDENTITY ]") }}
+        </div>
+    </form>
+
+    <div class="auth-footer-box">
+        <p>EXISTING OPERATOR PROFILE?</p>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-cyan">[ RETURN TO LOGIN ]</a>
+    </div>
+</div>
+{% endblock %}

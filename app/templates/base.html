@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AegisVault — Zero-Trust Enclave{% endblock %}</title>
+    <!-- C8: Strict CSP External Stylesheet Only -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="cyber-header">
+        <nav class="cyber-nav">
+            <a class="nav-brand" href="{{ url_for('index') }}">
+                <span class="status-dot"></span>
+                <span>AEGIS//VAULT</span>
+            </a>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}">[ HOME ]</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('notes.list_notes') }}">[ VAULT ]</a>
+                    <a href="{{ url_for('notes.create_note') }}">[ + DEPOSIT ]</a>
+                    {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('admin.list_users') }}">[ USERS ]</a>
+                        <a href="{{ url_for('admin.view_log') }}">[ SEC_LOG ]</a>
+                    {% endif %}
+                    <span class="nav-user-tag">
+                        <span>ID:</span>
+                        <strong>{{ current_user.username }}</strong>
+                        {% if current_user.role == 'admin' %}
+                            <span class="badge badge-purple">ADMIN</span>
+                        {% else %}
+                            <span class="badge badge-green">USER</span>
+                        {% endif %}
+                    </span>
+                    <!-- C8: Logout via POST with CSRF -->
+                    <form action="{{ url_for('auth.logout') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn-logout">LOGOUT</button>
+                    </form>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}">[ LOGIN ]</a>
+                    <a href="{{ url_for('auth.register') }}">[ REGISTER ]</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flashes">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">
+                            <span class="flash-tag">
+                                {% if category == 'danger' %}[CRITICAL]{% elif category == 'success' %}[SUCCESS]{% elif category == 'warning' %}[ALERT]{% else %}[INFO]{% endif %}
+                            </span>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

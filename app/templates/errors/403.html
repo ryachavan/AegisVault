@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}403 ACCESS DENIED // AEGISVAULT{% endblock %}
+
+{% block content %}
+<div class="error-vault">
+    <div class="error-code">403</div>
+    <div class="error-title">[ ACCESS VIOLATION DETECTED ]</div>
+    <p class="error-desc">
+        CLEARANCE REJECTED. Security perimeter prevents unauthorized inspection of this resource.
+    </p>
+    <a href="{{ url_for('notes.list_notes') }}" class="btn btn-cyan">[ RETURN TO SAFE VAULT ]</a>
+</div>
+{% endblock %}
